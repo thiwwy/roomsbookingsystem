@@ -1,0 +1,202 @@
+swagger: "2.0"
+info:
+  title: Rooms Booking system API
+  description: Exposes functionalities that allow to booking meetings in different meeting rooms.
+  version: "0.0.1"
+host: .......
+basePath: "/api"
+consumes:
+- "application/json"
+produces:
+- "application/json"
+schemes:
+- "https"
+paths:
+  /rooms:
+    get:
+      summary: Returns a list with all the IDs of all the meeting rooms.
+      operationId: "getRooms"
+      description: This endpoint is used to retrieve all the IDs of the meeting rooms in TMG.
+        It can be used in combination with /rooms/{id} to get the details and the meetings of each room.
+      tags:
+        - Rooms
+      responses:
+        200:
+          description: Array of meeting rooms IDs
+          schema:
+            $ref: '#/definitions/ArrayOfRoomsIds'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /health:
+    get:
+      description: "HealthCheck endpoint"
+      operationId: "health"
+      produces: []
+      responses:
+        200:
+          description: "HealthCheck response"
+  /rooms/{id}:
+    get:
+      summary: Returns details of the given room
+      operationId: "getRoomDetails"
+      description: Provides all the details (booked meetings included) of the given room.
+      tags:
+      - Rooms
+      parameters:
+        - name: id
+          in: path
+          description: rooms to fetch
+          required: true
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: Returns the details of the given room
+          schema:
+            $ref: '#/definitions/RoomDetails'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /rooms/{id}/meetings/:
+    post:
+      summary: Book a meeting in the given room.
+      operationId: "postMeeting"
+      description: For the selected room a new meeting resource is created. The resource is provided in JSON format in the body of the request.
+      tags:
+      - Rooms
+      parameters:
+        - name: id
+          in: path
+          description: rooms to fetch
+          required: true
+          type: integer
+          format: int64
+      responses:
+        201:
+          description: Confirms that a new meeting has been created
+          schema:
+            $ref: '#/definitions/Meeting'
+        404:
+          description: Room not found
+        409:
+          description: Resource conflict, a meeting with the same id already exists
+        400:
+          description: Invalid request
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /rooms/{room-id}/meetings/{meeting-id}:
+    put:
+      summary: Updates an already existing booking.
+      operationId: "updateMeeting"
+      description: This endpoint updates an existing booking when a new booking entity is provided.
+      tags:
+      - Room
+      parameters:
+        - name: room-id
+          in: path
+          description: rooms to fetch
+          required: true
+          type: integer
+          format: int64
+        - name: meeting-id
+          in: path
+          description: meeting to update
+          required: true
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: Returns OK wehen the meeting is updated as expected
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      summary: Delete an existing meeting.
+      operationId: "deleteMeeting"
+      description: Delete an existing meeting.
+      tags:
+      - Room
+      parameters:
+        - name: room-id
+          in: path
+          description: rooms to fetch
+          required: true
+          type: integer
+          format: int64
+        - name: meeting-id
+          in: path
+          description: meeting to delete
+          required: true
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: Returns OK when the meeting is deleted
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+definitions:
+  ArrayOfRoomsIds:
+    type: object
+    properties:
+      rooms:
+        type: array
+        items:
+          type: integer
+          format: int64
+  RoomDetails:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: Room ID.
+      meetings:
+        type: array
+        items:
+          $ref: '#/definitions/Meeting'
+        description: List of meetings booked in a given room.
+  Meeting:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: Meeting ID.
+      employees:
+        type: array
+        items:
+  Agenda:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: Agenda ID.
+      agenda:
+        type: string
+        description: Agenda body
+    startTime:
+      type: integer
+      format: int64
+      description: Meeting start timestamp
+    endTime:
+      type: integer
+      format: int64
+      description: Meeting end timestamp
+  Error:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int64
+        message:
+          type: string
